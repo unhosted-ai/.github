@@ -1,38 +1,39 @@
 # unhosted
 
-> **AI that lives where you do.**
-> Pool the computers you already own into one private inference cluster. Local-first, trusted between paired peers, no central server.
+> Private inference on hardware you already own. Pool the devices on your network into one OpenAI-compatible endpoint, with end-to-end encrypted traffic between paired peers and no central server.
 
-[`unhosted-ai.github.io/unhosted-core/`](https://unhosted-ai.github.io/unhosted-core/) · [getting started](https://github.com/unhosted-ai/unhosted-core#install) · [report a bug](https://github.com/unhosted-ai/unhosted-core/issues/new?labels=bug)
+[Documentation](https://unhosted-ai.github.io/unhosted-core/) · [Installation](https://github.com/unhosted-ai/unhosted-core#install) · [Report an issue](https://github.com/unhosted-ai/unhosted-core/issues/new?labels=bug)
 
 ---
 
-## What you'll find here
+## Projects
 
-| Repo | What it is | License |
+| Repository | Purpose | License |
 |---|---|---|
-| [**unhosted-core**](https://github.com/unhosted-ai/unhosted-core) | The daemon. One binary per device speaks a small HTTP API on port `7777`; the CLI (and any OpenAI-compatible client) sends prompts to it. Inference runs inside `llama.cpp`, `ollama`, or `lm studio` — unhosted is the orchestration layer, not the neural network. | AGPL-3.0-or-later |
-| [**unhosted-payments**](https://github.com/unhosted-ai/unhosted-payments) | Settlement primitives + per-rail adapters for public-mode swarm. `core` is rail-agnostic; `lightning`, `usdc-base`, `usdc-solana`, `stripe-connect` ship as sibling crates behind cargo features. | AGPL-3.0-or-later |
-| [**unhosted-plugins**](https://github.com/unhosted-ai/unhosted-plugins) | MCP server shim + plugin scaffolding. Points an MCP-aware host (Claude Desktop, Cursor, Zed) at a local daemon. | AGPL-3.0-or-later |
-| [**homebrew-unhosted**](https://github.com/unhosted-ai/homebrew-unhosted) | Homebrew tap. `brew tap unhosted-ai/unhosted` then `brew install unhosted-ai/unhosted/llama-cpp-rpc` for the VRAM-pool runtime. | — |
+| [`unhosted-core`](https://github.com/unhosted-ai/unhosted-core) | Daemon and CLI. One binary per device exposes an HTTP API on port `7777`; inference runs inside `llama.cpp`, `Ollama`, or `LM Studio`. The orchestration layer, not the model. | AGPL-3.0-or-later |
+| [`unhosted-payments`](https://github.com/unhosted-ai/unhosted-payments) | Settlement primitives and per-rail adapters for public-mode swarm. Rail-agnostic core; Lightning, USDC, and Stripe adapters ship as sibling crates. | AGPL-3.0-or-later |
+| [`unhosted-plugins`](https://github.com/unhosted-ai/unhosted-plugins) | Model Context Protocol (MCP) server and plugin scaffolding for Claude Desktop, Cursor, Zed, and other MCP hosts. | AGPL-3.0-or-later |
+| [`homebrew-unhosted`](https://github.com/unhosted-ai/homebrew-unhosted) | Homebrew tap. Provides `llama-cpp-rpc` and related VRAM-pool runtime dependencies. | — |
 
-The commercial enterprise tier (`unhosted-enterprise`) is a private repository. For deployment authorization, see [licensing inquiries](#licensing).
-
----
-
-## Trust radius — three concentric layers
-
-Trust isn't binary. unhosted gives you three modes, and each strictly contains the one before it:
-
-- **local** · your devices, your network. No internet required, no payment, no rate limit.
-- **trusted** · friends, family, team. End-to-end encrypted. Paired explicitly. No payment.
-- **public** · strangers' idle GPUs, paid in USDC per token. Opt-in safety net. You set the ceiling.
-
-Each ring is opt-in. Flow falls outward only when you ask it to.
+A commercial enterprise tier is maintained in a separate proprietary repository. See [Licensing](#licensing).
 
 ---
 
-## Install in one line
+## Trust radius
+
+unhosted exposes three concentric operating modes, each strictly containing the one before it:
+
+| Mode | Scope | Cost |
+|---|---|---|
+| **Local** | Devices on your network. No internet required. | Free |
+| **Trusted** | Peers paired explicitly out-of-band. End-to-end encrypted. | Free |
+| **Public** | Strangers' idle GPUs, paid per token in USDC or Lightning. Opt-in. | Per-token, operator-priced |
+
+Each mode is opt-in. Traffic falls outward only when explicitly requested by the caller.
+
+---
+
+## Installation
 
 ```sh
 # macOS / Linux
@@ -42,70 +43,64 @@ curl -fsSL https://raw.githubusercontent.com/unhosted-ai/unhosted-core/main/scri
 irm https://raw.githubusercontent.com/unhosted-ai/unhosted-core/main/scripts/install.ps1 | iex
 ```
 
-Then `unhosted serve` and open `http://127.0.0.1:7777`.
-
-Already installed? `unhosted upgrade` picks up the latest signed release.
+Start the daemon with `unhosted serve`. The web UI is served at `http://127.0.0.1:7777`. Existing installations can update in place with `unhosted upgrade`.
 
 ---
 
-## What's shipped
+## Release status
 
-The daemon's HTTP surface, with status as of the latest tagged release:
+Status of major capabilities as of the latest tagged release:
 
 | Capability | Status | First shipped |
 |---|---|---|
-| Single-machine inference (llama.cpp / ollama / lm studio) | ✅ | v0.0.1 |
-| LAN cluster — request routing across paired peers | ✅ | v0.0.2 |
-| mDNS peer discovery + one-click pairing | ✅ | v0.0.3 |
-| QUIC peer transport with Ed25519-pinned TLS | ✅ | v0.0.4 |
-| Auto-detect llama-server / ollama / lm studio | ✅ | v0.0.4 |
-| Web UI / desktop app (Tauri 2, not Electron) | ✅ | v0.0.14 |
-| Minisign-signed auto-updater | ✅ | v0.0.15 |
-| One-click public URL via Cloudflare tunnel | ✅ | v0.0.35 |
-| VRAM-pooling — layer-split across paired peers | ✅ | v0.0.35 |
-| Public-mode policy (sanctions defaults, KYC tiers, rail-list) | ✅ | v0.0.46 |
-| `unhosted-payments` Lightning rail adapter (ADR-0011 Phase B) | ✅ | v0.0.61 |
-| Settings modal — sidebar refactor, tunnel-aware privacy note | ✅ | v0.0.63 |
-| `unhosted upgrade` subcommand + startup update check | ✅ | v0.0.64 |
-| Audit-log SSE feed (`/v1/audit/stream`, `/v1/audit/recent`) | ✅ | v0.0.65 |
-| Prometheus `/metrics` endpoint | ✅ | v0.0.66 |
-| Trusted-peer pairing (wireguard-style) | 🛠️ | v0.1.0 |
-| Public swarm (USDC settlements, escrow on Base) | 📋 | v0.3.0+ |
-| Verifiable inference (optimistic + redundancy → zk) | 🔬 | research |
+| Single-machine inference (llama.cpp / Ollama / LM Studio) | Shipped | v0.0.1 |
+| LAN cluster — request routing across paired peers | Shipped | v0.0.2 |
+| mDNS peer discovery and explicit pairing | Shipped | v0.0.3 |
+| QUIC peer transport with Ed25519-pinned TLS | Shipped | v0.0.4 |
+| Auto-detection of installed model runtimes | Shipped | v0.0.4 |
+| Web UI and desktop application (Tauri 2) | Shipped | v0.0.14 |
+| Minisign-verified auto-updater | Shipped | v0.0.15 |
+| Public URL via Cloudflare tunnel | Shipped | v0.0.35 |
+| VRAM-pooling — layer-split inference across paired peers | Shipped | v0.0.35 |
+| Public-mode policy (sanctions, KYC tiers, rail filtering) | Shipped | v0.0.46 |
+| Lightning rail adapter (ADR-0011 Phase B) | Shipped | v0.0.61 |
+| `unhosted upgrade` subcommand and startup update check | Shipped | v0.0.64 |
+| Audit-log SSE feed (`/v1/audit/stream`, `/v1/audit/recent`) | Shipped | v0.0.65 |
+| Prometheus `/metrics` endpoint | Shipped | v0.0.66 |
+| Data-loss-prevention integration hook | Shipped | v0.0.67 |
+| Trusted-peer pairing (WireGuard-style) | Designed | v0.1.0 |
+| Public swarm with USDC escrow | Designed | v0.3.0+ |
+| Verifiable inference | Research | — |
 
 ---
 
-## Compliance and license posture
+## Security and compliance posture
 
-unhosted-core is AGPL-3.0-or-later. The license:
+The open-source platform is published under AGPL-3.0-or-later. Every claim in the compliance documentation is verifiable against the published source code.
 
-- Lets you read it, fork it, audit it, run it for any purpose without payment.
-- Prevents someone from hosting it as a closed-source paid service and pretending they wrote it.
-- Has been mapped to the major control frameworks customers ask about (SOC 2 Common Criteria, ISO 27001:2022 Annex A, NIST AI RMF, EU AI Act). The full crosswalk lives in the commercial-tier repo; the open-source core is what every claim is verified against.
+The daemon ships with the following defaults:
 
-The daemon ships with:
+- **Sanctions enforcement** — comprehensively-sanctioned jurisdictions are auto-merged into every saved policy at the daemon level. The operator cannot persist a policy that omits them.
+- **No telemetry** — the daemon emits no analytics or usage data. The only optional outbound call is a GitHub-releases poll for update detection, disabled via `UNHOSTED_NO_UPDATE_CHECK=1`.
+- **Signed releases** — every release artifact is minisign-signed. The auto-updater refuses unsigned bundles.
+- **No central server** — the platform has no upstream SaaS dependency at runtime. The optional Cloudflare tunnel and public-mode payment rails are explicit operator opt-ins.
 
-- **Sanctions defaults baked in** — comprehensively-sanctioned jurisdictions (KP / IR / SY / CU) are auto-merged into every saved policy at the daemon level. Operators cannot save a policy that omits them.
-- **No telemetry by default** — the daemon emits no analytics. The only outbound call is the optional GitHub-releases poll for update detection (disable via `UNHOSTED_NO_UPDATE_CHECK=1`).
-- **Signed releases** — every binary is minisign-signed; the auto-updater refuses unsigned bundles.
-- **No central server** — the platform itself has no upstream SaaS dependency. The optional Cloudflare tunnel and public-mode payment rails are operator-explicit opt-ins.
-
-See the open-source repo's [`COMPLIANCE.md`](https://github.com/unhosted-ai/unhosted-core/blob/main/COMPLIANCE.md), [`SECURITY.md`](https://github.com/unhosted-ai/unhosted-core/blob/main/SECURITY.md), and [`IP_POSTURE.md`](https://github.com/unhosted-ai/unhosted-core/blob/main/IP_POSTURE.md) for the full posture.
+Compliance documentation maps the platform's controls to SOC 2 Common Criteria, ISO/IEC 27001:2022 Annex A, NIST AI Risk Management Framework, EU AI Act, and HIPAA Technical Safeguards. See [`COMPLIANCE.md`](https://github.com/unhosted-ai/unhosted-core/blob/main/COMPLIANCE.md), [`SECURITY.md`](https://github.com/unhosted-ai/unhosted-core/blob/main/SECURITY.md), and [`IP_POSTURE.md`](https://github.com/unhosted-ai/unhosted-core/blob/main/IP_POSTURE.md) in the core repository.
 
 ---
 
 ## Licensing
 
-The open-source projects above are AGPL-3.0-or-later and free to use, fork, and self-deploy without payment.
+The open-source projects listed above are licensed under AGPL-3.0-or-later. They may be used, audited, forked, and self-deployed without payment.
 
-The commercial enterprise tier — compliance documentation pack (SOC 2 / ISO 27001 / NIST AI RMF / EU AI Act / HIPAA), DPA + BAA templates, deployment runbooks, air-gapped install bundles, fleet console, SSO bridge — is licensed separately under a proprietary "all rights reserved" license, owned by Ankur Sinha.
+The commercial enterprise tier — including the full compliance documentation pack (SOC 2 / ISO 27001 / NIST AI RMF / EU AI Act / HIPAA), DPA and BAA templates, deployment runbooks, air-gapped installer bundles, fleet console, and SSO bridge — is licensed separately under a proprietary agreement.
 
-For enterprise deployment authorization, support contracts, or commercial inquiries: **h99311@gmail.com**.
+For enterprise deployment authorization, signed support contracts, or commercial partnership inquiries, contact **h99311@gmail.com**.
 
 ---
 
-## Build in public
+## Contributing
 
-We ship on GitHub. No newsletter, no Discord, no podcast. Discussions happen in PRs and issues. Brand voice rules are in [`BRAND.md`](https://github.com/unhosted-ai/unhosted-core/blob/main/BRAND.md) — plain language, no marketing, no superlatives.
+Development happens in the open on GitHub. Issues and pull requests are welcome. Project conventions are documented in [`BRAND.md`](https://github.com/unhosted-ai/unhosted-core/blob/main/BRAND.md), [`MANIFESTO.md`](https://github.com/unhosted-ai/unhosted-core/blob/main/MANIFESTO.md), and the architecture decision records under [`design/`](https://github.com/unhosted-ai/unhosted-core/tree/main/design).
 
-[Manifesto](https://github.com/unhosted-ai/unhosted-core/blob/main/MANIFESTO.md) · [Roadmap](https://github.com/unhosted-ai/unhosted-core/blob/main/README.md#roadmap) · [Open issues](https://github.com/unhosted-ai/unhosted-core/issues)
+Security disclosures are handled through the process documented in the core repository's [`SECURITY.md`](https://github.com/unhosted-ai/unhosted-core/blob/main/SECURITY.md).
