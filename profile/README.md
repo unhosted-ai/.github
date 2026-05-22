@@ -19,6 +19,10 @@ A commercial enterprise tier is maintained in a separate proprietary repository.
 
 ---
 
+## Target use cases
+
+The canonical workloads unhosted is built for — codebase exploration, personal research, regulatory monitoring, internal knowledge bases, personal finance — plus a commercial-tier-gated tier (healthcare, legal) are documented in [`USE_CASES.md`](https://github.com/unhosted-ai/unhosted-core/blob/main/USE_CASES.md). The agent-runtime tool roadmap is derived from that list.
+
 ## Trust radius
 
 unhosted exposes three concentric operating modes, each strictly containing the one before it:
